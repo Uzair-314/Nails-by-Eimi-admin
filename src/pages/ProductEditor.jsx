@@ -28,7 +28,7 @@ export default function ProductEditor({ product, categories, onClose, onSaved })
     is_available: product?.is_available ?? true,
     is_active: product?.is_active ?? true,
     is_featured: product?.is_featured ?? false,
-    category_id: product?.category_id ?? '',
+    category_ids: (product?.product_categories ?? []).map((pc) => pc.category_id),
     tags: product?.tags ?? [],
   }))
 
@@ -43,6 +43,14 @@ export default function ProductEditor({ product, categories, onClose, onSaved })
 
   const setDetail = (i, value) =>
     setForm((f) => ({ ...f, details: f.details.map((d, n) => (n === i ? value : d)) }))
+
+  const toggleCategory = (id) =>
+    setForm((f) => ({
+      ...f,
+      category_ids: f.category_ids.includes(id)
+        ? f.category_ids.filter((c) => c !== id)
+        : [...f.category_ids, id],
+    }))
 
   const toggleTag = (tag) =>
     setForm((f) => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter((t) => t !== tag) : [...f.tags, tag] }))
@@ -318,19 +326,46 @@ export default function ProductEditor({ product, categories, onClose, onSaved })
           <section className="card p-6">
             <h2 className="font-display text-[20px] font-semibold text-ink">Placement</h2>
 
-            <label className="mt-4 block">
-              <span className="mb-1.5 block text-[13px] font-medium text-ink">Category</span>
-              <select
-                value={form.category_id ?? ''}
-                onChange={(e) => set({ category_id: e.target.value })}
-                className="field"
-              >
-                <option value="">Uncategorised</option>
+            <fieldset className="mt-4">
+              <legend className="mb-2 text-[13px] font-medium text-ink">Categories</legend>
+              <p className="mb-2.5 text-[12px] leading-relaxed text-muted">
+                Tick every shelf this should appear on. The first one, by menu order, is
+                used for the breadcrumb on the shop.
+              </p>
+
+              <div className="space-y-1">
                 {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <label
+                    key={c.id}
+                    className={[
+                      'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-[14px] transition',
+                      c.parent_id ? 'ml-5' : '',
+                      form.category_ids.includes(c.id) ? 'bg-wine-50 text-ink' : 'text-muted hover:bg-blush',
+                    ].join(' ')}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form.category_ids.includes(c.id)}
+                      onChange={() => toggleCategory(c.id)}
+                      className="h-4 w-4 accent-[#E01B6A]"
+                    />
+                    {c.name}
+                  </label>
                 ))}
-              </select>
-            </label>
+              </div>
+
+              {form.category_ids.length === 0 && (
+                <p className="mt-2 text-[12px] text-muted">
+                  With none ticked this will not appear under any category.
+                </p>
+              )}
+
+              <p className="mt-2.5 flex items-start gap-1.5 text-[12px] leading-relaxed text-muted">
+                <Icon name="info" size={13} className="mt-0.5 shrink-0" />
+                Anything with a &ldquo;was&rdquo; price also shows in Deals automatically,
+                ticked or not.
+              </p>
+            </fieldset>
 
             <div className="mt-4">
               <span className="mb-2 block text-[13px] font-medium text-ink">Tags</span>

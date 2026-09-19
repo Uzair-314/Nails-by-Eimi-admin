@@ -10,13 +10,13 @@ const fail = (error) => { if (error) throw error }
 
 /* --------------------------------------------------------------- products */
 
-const ADMIN_PRODUCT_SELECT = '*, categories(slug, name), product_images(id, url, alt, sort_order)'
+const ADMIN_PRODUCT_SELECT =
+  '*, product_categories(category_id, categories(slug, name, sort_order)), product_images(id, url, alt, sort_order)'
 
-export async function adminListProducts({ search, categoryId, status } = {}) {
+export async function adminListProducts({ search, status } = {}) {
   let query = supabase.from('products').select(ADMIN_PRODUCT_SELECT).order('created_at', { ascending: false })
 
   if (search?.trim()) query = query.ilike('name', `%${search.trim()}%`)
-  if (categoryId) query = query.eq('category_id', categoryId)
   if (status === 'active') query = query.eq('is_active', true)
   if (status === 'hidden') query = query.eq('is_active', false)
   if (status === 'out-of-stock') query = query.or('stock.eq.0,is_available.eq.false')
@@ -47,19 +47,32 @@ const productRow = (p) => ({
   is_available: p.is_available ?? true,
   is_active: p.is_active ?? true,
   is_featured: p.is_featured ?? false,
-  category_id: p.category_id || null,
   tags: p.tags ?? [],
 })
+
+/**
+ * Replaces a product's shelves with exactly the ids given. Done as delete-then-
+ * insert rather than a diff because the set is small and this cannot drift.
+ */
+async function setProductCategories(productId, categoryIds) {
+  fail((await supabase.from('product_categories').delete().eq('product_id', productId)).error)
+  if (!categoryIds?.length) return
+  fail((await supabase.from('product_categories').insert(
+    categoryIds.map((category_id) => ({ product_id: productId, category_id }))
+  )).error)
+}
 
 export async function adminCreateProduct(p) {
   const { data, error } = await supabase.from('products').insert(productRow(p)).select().single()
   fail(error)
+  await setProductCategories(data.id, p.category_ids)
   return data
 }
 
 export async function adminUpdateProduct(id, p) {
   const { data, error } = await supabase.from('products').update(productRow(p)).eq('id', id).select().single()
   fail(error)
+  await setProductCategories(id, p.category_ids)
   return data
 }
 
@@ -132,6 +145,7 @@ export async function adminSaveCategory(c) {
     parent_id: c.parent_id || null,
     sort_order: c.sort_order ?? 0,
     is_active: c.is_active ?? true,
+    is_promotional: c.is_promotional ?? false,
   }
   const { error } = c.id
     ? await supabase.from('categories').update(row).eq('id', c.id)

@@ -30,7 +30,7 @@ const FIELD_LABELS = {
   price: 'Price', compare_at: 'Was price', stock: 'Stock', name: 'Name', slug: 'Web address',
   is_active: 'Visible in shop', is_available: 'Available to buy', is_featured: 'Featured',
   status: 'Status', tracking: 'Tracking', description: 'Description', tags: 'Tags',
-  category_id: 'Category', value: 'Value', code: 'Code', is_default: 'Default',
+  value: 'Value', code: 'Code', is_default: 'Default', is_promotional: 'Promotional shelf',
 }
 
 const MONEY_FIELDS = new Set(['price', 'compare_at', 'min_spend', 'subtotal', 'total', 'shipping'])

@@ -163,7 +163,12 @@ export default function AdminProducts() {
                     {p.is_featured && <Badge tone="amber">Featured</Badge>}
                   </div>
                   <p className="mt-1 text-[12px] text-muted">
-                    {p.categories?.name ?? 'Uncategorised'} · {p.slug}
+                    {(p.product_categories ?? []).length
+                      ? p.product_categories
+                          .map((pc) => pc.categories?.name)
+                          .filter(Boolean)
+                          .join(', ')
+                      : 'Uncategorised'} · {p.slug}
                   </p>
                 </div>
 

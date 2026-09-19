@@ -52,8 +52,8 @@ IP list — though the database is already the real boundary. See
 | Section | |
 | --- | --- |
 | **Dashboard** | Revenue, open orders, customer count, low stock, unread messages |
-| **Products** | Price and sale price, stock, out-of-stock toggle, hide/show, photo upload, category, tags, spec list |
-| **Categories** | Create, rename, reorder, nest; controls the shop's menu |
+| **Products** | Price and sale price, stock, out-of-stock toggle, hide/show, photo upload, categories, tags, spec list |
+| **Categories** | Create, rename, reorder, nest, mark promotional; controls the shop's menu |
 | **Orders** | Status, tracking number, full order detail |
 | **Discounts** | Percentage or fixed, minimum spend, expiry, usage limits |
 | **History** | Audit log of every change, plus full order history |

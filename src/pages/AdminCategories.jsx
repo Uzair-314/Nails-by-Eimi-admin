@@ -6,7 +6,10 @@ import { adminDeleteCategory, adminListCategories, adminSaveCategory } from '../
 
 const ICONS = ['tag', 'bottle', 'kit', 'gem', 'ring', 'nail', 'sparkle', 'gift', 'heart']
 
-const BLANK = { slug: '', name: '', blurb: '', icon: 'tag', parent_id: '', sort_order: 0, is_active: true }
+const BLANK = {
+  slug: '', name: '', blurb: '', icon: 'tag', parent_id: '',
+  sort_order: 0, is_active: true, is_promotional: false,
+}
 
 export default function AdminCategories() {
   const [categories, setCategories] = useState(null)
@@ -22,7 +25,7 @@ export default function AdminCategories() {
 
   const startNew = () => { setForm(BLANK); setEditing('new'); setError(null) }
   const startEdit = (c) => {
-    setForm({ ...c, parent_id: c.parent_id ?? '', blurb: c.blurb ?? '' })
+    setForm({ ...c, parent_id: c.parent_id ?? '', blurb: c.blurb ?? '', is_promotional: c.is_promotional ?? false })
     setEditing(c.id)
     setError(null)
   }
@@ -129,6 +132,22 @@ export default function AdminCategories() {
           <label className="mt-5 flex items-center gap-2.5 text-[14px] text-ink">
             <input type="checkbox" checked={form.is_active} onChange={(e) => set({ is_active: e.target.checked })} className="h-4 w-4 accent-[#E01B6A]" />
             Show in the menu
+          </label>
+
+          <label className="mt-3 flex items-start gap-2.5 text-[14px] text-ink">
+            <input
+              type="checkbox"
+              checked={form.is_promotional ?? false}
+              onChange={(e) => set({ is_promotional: e.target.checked })}
+              className="mt-0.5 h-4 w-4 accent-[#E01B6A]"
+            />
+            <span>
+              Promotional shelf
+              <span className="mt-0.5 block text-[12px] text-muted">
+                Like Deals — collects products but is never shown as a product&rsquo;s home
+                in the breadcrumb.
+              </span>
+            </span>
           </label>
 
           <div className="mt-6 flex gap-3">

@@ -105,7 +105,7 @@ without opening the editor:
 Filters: All, Live, Hidden, Out of stock. Search is debounced 180ms.
 
 **Editor** (`ProductEditor.jsx`) covers name, slug, description, spec list,
-price, sale price, stock, availability, category, tags, visibility, featured,
+price, sale price, stock, availability, categories, tags, visibility, featured,
 and photos.
 
 - Slug auto-generates from the name for **new** products only, so editing a name
@@ -115,11 +115,26 @@ and photos.
 - Photos upload only after a product exists, because the storage path is keyed by
   product id
 
+**Categories are checkboxes, not a dropdown.** A product sits on as many shelves
+as you tick, stored in the `product_categories` join table. Its home for the
+shop's breadcrumb is the first ticked category by menu order, skipping anything
+flagged promotional.
+
+Discounted products appear in Deals whether or not you tick it — anything with a
+"was" price above its selling price, or the `deal` tag. The editor says so under
+the checkboxes.
+
 ### Categories
 
 Create, rename, nest, reorder, hide. Parents render with their children
 indented. Deleting a parent cascades to its children and leaves its products
 uncategorised — the confirmation says so.
+
+**Promotional shelf** marks a category as one that collects products rather than
+describing them, like Deals. Flagged categories still appear in the menu and
+still gather products, but are never shown as a product's home in the
+breadcrumb. Without the flag, Deals would claim every discounted product,
+because it sorts first.
 
 This screen controls the shop's menu directly.
 
@@ -232,6 +247,7 @@ Two things deliberately differ from the copies:
 | --- | --- |
 | **Cancelling does not restock** | Stock stays decremented; fix it manually |
 | **Deleting a product** | Removes it permanently. Order history survives because line items copy name, price and image. Hiding is usually what you want |
+| **Unticking Deals may not remove it** | Discounted products are collected automatically. Clear the "was" price to take one out |
 | **Image order** | First uploaded is the main image; there is no reordering yet |
 | **Settings are cached per page load** | The shop needs a refresh to pick up changes |
 | **Activity log is not retrospective** | It only covers changes made after the triggers existed |
