@@ -24,6 +24,29 @@ update public.profiles set is_admin = true where email = 'someone@example.com';
 
 Signing in without that flag shows an "Admins only" notice rather than the panel.
 
+## Deploying
+
+Any static host works. On Vercel the Vite preset is detected automatically.
+
+**Three environment variables**, applied to production, preview and development:
+
+| Name | |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Same value as the storefront |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Same value as the storefront |
+| `VITE_SHOP_URL` | Where "View the shop" points. Optional |
+
+Vite inlines these **at build time**, so saving them does nothing until the site
+is redeployed. If they are missing, the app shows a setup screen naming what is
+absent rather than a blank page.
+
+`vercel.json` rewrites every path to `index.html`, without which refreshing on
+`/products` returns a 404.
+
+Consider restricting access further — Vercel password protection, or an allowed
+IP list — though the database is already the real boundary. See
+[Signing in](#signing-in).
+
 ## What it does
 
 | Section | |

@@ -51,7 +51,37 @@ password around to bootstrap the account.
 
 ---
 
-## 3. Screens
+## 3. Deploying
+
+Set these on the host, for production, preview and development:
+
+| Name | Value |
+| --- | --- |
+| `VITE_SUPABASE_URL` | `https://ydsixxnrcgvibtfchvts.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` |
+| `VITE_SHOP_URL` | The deployed storefront, for the "View the shop" link |
+
+**Vite reads these at build time.** They are inlined during `vite build`, so a
+saved variable changes nothing until the site is redeployed.
+
+Missing configuration renders `ConfigNotice` — a screen naming the absent
+variables — rather than a blank page. `supabase.js` exports `SUPABASE_CONFIGURED`
+instead of throwing, because a throw during module load stops React mounting at
+all and hides the reason in the console.
+
+`vercel.json` rewrites all paths to `index.html`; without it, landing on or
+refreshing `/products` returns a 404, since routing happens in the browser.
+
+Also worth doing on a live deployment:
+
+- Add the admin domain to **Supabase → Auth → URL Configuration**, or
+  password-reset links point at localhost
+- Connect a real SMTP provider; the built-in mailer is rate-limited
+- The **service role** key must never appear in this app
+
+---
+
+## 4. Screens
 
 ### Dashboard
 
@@ -152,7 +182,7 @@ refreshed.
 
 ---
 
-## 4. Structure
+## 5. Structure
 
 ```
 src/
@@ -169,7 +199,7 @@ src/
 
 ---
 
-## 5. The duplication
+## 6. The duplication
 
 Six modules are **copies**, not shared code:
 
@@ -196,7 +226,7 @@ Two things deliberately differ from the copies:
 
 ---
 
-## 6. Gotchas
+## 7. Gotchas
 
 | | |
 | --- | --- |
@@ -209,7 +239,7 @@ Two things deliberately differ from the copies:
 
 ---
 
-## 7. Not built yet
+## 8. Not built yet
 
 - Bulk actions on products
 - CSV export of orders
