@@ -60,9 +60,9 @@ export default function AdminHistory() {
   useEffect(() => {
     if (tab === 'activity') {
       setActivity(null)
-      adminListActivity({ entity }).then(setActivity)
+      adminListActivity({ entity }).then(setActivity).catch(() => setActivity([]))
     } else if (!orders) {
-      adminOrderHistory().then(setOrders)
+      adminOrderHistory().then(setOrders).catch(() => setOrders([]))
     }
   }, [tab, entity]) // eslint-disable-line react-hooks/exhaustive-deps
 

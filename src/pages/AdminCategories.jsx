@@ -16,7 +16,7 @@ export default function AdminCategories() {
   const [error, setError] = useState(null)
   const { toast } = useToast()
 
-  useEffect(() => { adminListCategories().then(setCategories) }, [])
+  useEffect(() => { adminListCategories().then(setCategories).catch(() => setCategories([])) }, [])
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
 

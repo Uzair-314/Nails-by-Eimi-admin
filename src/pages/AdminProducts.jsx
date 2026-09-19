@@ -29,7 +29,7 @@ export default function AdminProducts() {
     setProducts(await adminListProducts({ search, status }))
   }, [search, status])
 
-  useEffect(() => { adminListCategories().then(setCategories) }, [])
+  useEffect(() => { adminListCategories().then(setCategories).catch(() => setCategories([])) }, [])
 
   useEffect(() => {
     const t = setTimeout(reload, 180)

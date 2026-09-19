@@ -15,7 +15,7 @@ export default function AdminDiscounts() {
   const [error, setError] = useState(null)
   const { toast } = useToast()
 
-  useEffect(() => { adminListDiscounts().then(setDiscounts) }, [])
+  useEffect(() => { adminListDiscounts().then(setDiscounts).catch(() => setDiscounts([])) }, [])
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
 

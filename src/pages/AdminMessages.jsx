@@ -7,7 +7,7 @@ import { adminListMessages, adminMarkMessageRead } from '../lib/adminApi'
 export default function AdminMessages() {
   const [messages, setMessages] = useState(null)
 
-  useEffect(() => { adminListMessages().then(setMessages) }, [])
+  useEffect(() => { adminListMessages().then(setMessages).catch(() => setMessages([])) }, [])
 
   const toggleRead = async (m) => {
     await adminMarkMessageRead(m.id, !m.is_read)

@@ -5,7 +5,8 @@ import { adminListCustomers } from '../lib/adminApi'
 import { formatDate, formatPoints } from '../lib/format'
 
 export default function AdminCustomers() {
-  const { data, loading } = useAsync(adminListCustomers, [])
+  const { data, loading, error } = useAsync(adminListCustomers, [])
+  const customers = data ?? []
 
   return (
     <div>
@@ -14,12 +15,16 @@ export default function AdminCustomers() {
       <div className="mt-7 space-y-3">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-card" />)
-        ) : data.length === 0 ? (
+        ) : error ? (
+          <div className="card p-10 text-center">
+            <p className="text-sm text-red-700">Could not load customers: {error.message}</p>
+          </div>
+        ) : customers.length === 0 ? (
           <div className="card p-10 text-center">
             <p className="text-sm text-muted">No accounts yet.</p>
           </div>
         ) : (
-          data.map((c) => {
+          customers.map((c) => {
             const name = `${c.first_name} ${c.last_name}`.trim()
             return (
               <article key={c.id} className="card flex flex-wrap items-center gap-4 p-4">
