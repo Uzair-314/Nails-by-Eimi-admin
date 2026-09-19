@@ -5,7 +5,7 @@ import { formatPrice } from '../lib/format'
 import { useToast } from '../context/ToastContext'
 import {
   adminDeleteProduct, adminListCategories, adminListProducts,
-  adminSetProductFlag, adminSetStock,
+  adminSetPrice, adminSetProductFlag, adminSetStock,
 } from '../lib/adminApi'
 import ProductEditor from './ProductEditor'
 
@@ -22,6 +22,7 @@ export default function AdminProducts() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [editing, setEditing] = useState(null) // null | 'new' | product row
+  const [priceDraft, setPriceDraft] = useState({}) // id -> in-progress price text
   const { toast } = useToast()
 
   const reload = useCallback(async () => {
@@ -33,6 +34,17 @@ export default function AdminProducts() {
   useEffect(() => {
     const t = setTimeout(reload, 180)
     return () => clearTimeout(t)
+  }, [reload])
+
+  // Picks up changes made elsewhere — another tab, or the shop in a second window.
+  useEffect(() => {
+    const refresh = () => { if (!document.hidden) reload() }
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refresh)
+    }
   }, [reload])
 
   const toggleFlag = async (product, field) => {
@@ -47,6 +59,25 @@ export default function AdminProducts() {
     const n = Math.max(0, Number(value) || 0)
     await adminSetStock(product.id, n)
     setProducts((list) => list.map((p) => (p.id === product.id ? { ...p, stock: n } : p)))
+  }
+
+  // Committed on blur or Enter rather than per keystroke, so typing "1200"
+  // does not save 1, then 12, then 120 on the way.
+  const commitPrice = async (product, value) => {
+    const n = Number(value)
+    if (!Number.isFinite(n) || n < 0 || n === Number(product.price)) {
+      setPriceDraft((d) => { const next = { ...d }; delete next[product.id]; return next })
+      return
+    }
+    try {
+      await adminSetPrice(product.id, n)
+      setProducts((list) => list.map((p) => (p.id === product.id ? { ...p, price: n } : p)))
+      toast(`${product.name} is now ${formatPrice(n)}`)
+    } catch (err) {
+      toast(err.message ?? 'Could not save that price')
+    } finally {
+      setPriceDraft((d) => { const next = { ...d }; delete next[product.id]; return next })
+    }
   }
 
   const remove = async (product) => {
@@ -136,12 +167,24 @@ export default function AdminProducts() {
                   </p>
                 </div>
 
-                <div className="text-right">
-                  <p className="text-[15px] font-semibold text-wine">{formatPrice(p.price)}</p>
+                <label className="flex items-center gap-2 text-[12px] text-muted">
+                  Rs
+                  <input
+                    type="number"
+                    min={0}
+                    step="1"
+                    value={priceDraft[p.id] ?? p.price}
+                    onChange={(e) => setPriceDraft((d) => ({ ...d, [p.id]: e.target.value }))}
+                    onBlur={(e) => commitPrice(p, e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+                    aria-label={`Price for ${p.name}`}
+                    className="w-24 rounded-lg border border-line bg-white px-2.5 py-1.5 text-sm font-semibold
+                               text-wine focus:border-wine-200"
+                  />
                   {p.compare_at && (
-                    <p className="text-[12px] text-muted line-through">{formatPrice(p.compare_at)}</p>
+                    <span className="text-[11px] text-muted line-through">{formatPrice(p.compare_at)}</span>
                   )}
-                </div>
+                </label>
 
                 <label className="flex items-center gap-2 text-[12px] text-muted">
                   Stock

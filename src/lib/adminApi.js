@@ -322,3 +322,19 @@ export async function getUser() {
     isAdmin: data.is_admin,
   }
 }
+
+/**
+ * Inline price edit from the product list.
+ *
+ * The database refuses a price above an existing "was" price, so the message is
+ * translated here — the raw constraint error means nothing to whoever is typing.
+ */
+export async function adminSetPrice(id, price) {
+  const { error } = await supabase.from('products').update({ price }).eq('id', id)
+  if (error) {
+    if (error.message?.includes('products_compare_at_check')) {
+      throw new Error('Price cannot be higher than the “was” price. Clear that first in Edit.')
+    }
+    throw error
+  }
+}
