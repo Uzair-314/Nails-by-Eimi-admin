@@ -64,8 +64,9 @@ export function AuthProvider({ children }) {
     },
 
     resetPassword: async (email) => {
+      // Back to the panel root — this app has no /account routes.
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/account/settings`,
+        redirectTo: window.location.origin,
       })
       if (error) throw error
     },
