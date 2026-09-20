@@ -443,3 +443,78 @@ export function subscribeToNotifications(onInsert) {
 
   return () => { supabase.removeChannel(channel) }
 }
+
+/* ------------------------------------------------------------ hero slides */
+
+export async function adminListSlides() {
+  const { data, error } = await supabase
+    .from('hero_slides')
+    .select('*')
+    .order('sort_order')
+  fail(error)
+  return data ?? []
+}
+
+/**
+ * Uploads a hero image.
+ *
+ * Its own bucket, because a hero is a wide banner and nothing like a product
+ * photo — keeping them apart stops one being picked for the other by mistake.
+ */
+export async function adminUploadSlideImage(file) {
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+
+  const { error: upErr } = await supabase.storage
+    .from('hero-slides')
+    .upload(path, file, { cacheControl: '3600', upsert: false })
+  fail(upErr)
+
+  return supabase.storage.from('hero-slides').getPublicUrl(path).data.publicUrl
+}
+
+export async function adminSaveSlide(slide) {
+  const row = {
+    image_url: slide.image_url,
+    alt: slide.alt ?? '',
+    eyebrow: slide.eyebrow || null,
+    title: slide.title,
+    copy: slide.copy || null,
+    cta_label: slide.cta_label || null,
+    link_type: slide.link_type,
+    // Only the field the chosen link type uses is kept, so switching from a
+    // product to a category cannot leave a stale target behind it.
+    product_id: slide.link_type === 'product' ? slide.product_id : null,
+    category_id: slide.link_type === 'category' ? slide.category_id : null,
+    url: slide.link_type === 'url' ? slide.url : null,
+    focal_x: slide.focal_x,
+    focal_y: slide.focal_y,
+    is_active: slide.is_active,
+    sort_order: slide.sort_order,
+  }
+
+  const query = slide.id
+    ? supabase.from('hero_slides').update(row).eq('id', slide.id)
+    : supabase.from('hero_slides').insert(row)
+
+  const { data, error } = await query.select().single()
+  fail(error)
+  return data
+}
+
+export async function adminDeleteSlide(slide) {
+  fail((await supabase.from('hero_slides').delete().eq('id', slide.id)).error)
+
+  // Seeded slides point at /media/*.svg in the shop's own public folder, which
+  // is not ours to delete.
+  const marker = '/hero-slides/'
+  if (slide.image_url?.includes(marker)) {
+    await supabase.storage.from('hero-slides').remove([slide.image_url.split(marker)[1]])
+  }
+}
+
+export async function adminReorderSlides(ordered) {
+  for (const [i, slide] of ordered.entries()) {
+    fail((await supabase.from('hero_slides').update({ sort_order: i }).eq('id', slide.id)).error)
+  }
+}

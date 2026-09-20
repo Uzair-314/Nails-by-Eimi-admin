@@ -13,6 +13,7 @@ const ADMIN_NAV = [
   { to: '/', label: 'Dashboard', icon: 'home', end: true },
   { to: '/products', label: 'Products', icon: 'bag' },
   { to: '/categories', label: 'Categories', icon: 'tag' },
+  { to: '/slides', label: 'Slideshow', icon: 'sparkle' },
   { to: '/orders', label: 'Orders', icon: 'truck' },
   { to: '/discounts', label: 'Discounts', icon: 'gift' },
   { to: '/shipping', label: 'Delivery', icon: 'truck' },

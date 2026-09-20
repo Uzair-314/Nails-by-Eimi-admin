@@ -171,6 +171,27 @@ earlier changes are not in it.
 **Order history** — every order newest-first with customer, item count, tracking
 and total.
 
+### Slideshow
+
+The three pictures at the top of the shop. Upload an image, write the wording,
+and point the button at a product, a category or a path — putting a new product
+on the slideshow is a matter of picking it from the product list.
+
+**About the pictures.** They are never stretched: the shop draws them with
+`object-fit: cover`, which scales evenly. But the slot is a different shape on
+phone (4:5), tablet (16:9) and desktop (21:9), so a picture that is not that
+shape has to be cropped somewhere. The **focal point** sliders decide what stays
+in frame, and the editor previews all three shapes side by side while you drag,
+so you see the real crop before saving.
+
+Aim for roughly 2100 × 900. Anything wide and landscape works; the editor warns
+when an upload is too small to stay sharp on a large screen, or so far from
+banner-shaped that the desktop crop takes a narrow strip of it.
+
+Three is the limit, in the database as well as here. Hide or remove one before
+adding another. With none showing, the shop has no carousel at all and the page
+begins at the categories.
+
 ### New-order alerts
 
 An order arrives as a toast and an unread count on Orders, pushed over Supabase
