@@ -11,8 +11,10 @@ import { adminListNotifications, adminMarkNotificationsRead, subscribeToNotifica
 export function useNewOrders({ enabled, onNew }) {
   const [unread, setUnread] = useState([])
   const seen = useRef(new Set())
+  const pending = useRef([])
+  useEffect(() => { pending.current = unread }, [unread])
 
-  // Keeps the subscription from being town down and rebuilt whenever the
+  // Keeps the subscription from being torn down and rebuilt whenever the
   // caller re-renders with a fresh callback.
   const notify = useRef(onNew)
   useEffect(() => { notify.current = onNew }, [onNew])
@@ -39,11 +41,13 @@ export function useNewOrders({ enabled, onNew }) {
     return () => { active = false; unsubscribe() }
   }, [enabled])
 
+  // The write stays outside the state updater: React may call an updater twice,
+  // and this one would then mark the same rows read on a second, wasted request.
   const markRead = useCallback(() => {
-    setUnread((list) => {
-      if (list.length) adminMarkNotificationsRead(list.map((n) => n.id)).catch(() => {})
-      return []
-    })
+    const ids = pending.current.map((n) => n.id)
+    if (!ids.length) return
+    setUnread([])
+    adminMarkNotificationsRead(ids).catch(() => {})
   }, [])
 
   return { unread, count: unread.length, markRead }
