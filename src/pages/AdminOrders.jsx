@@ -1,12 +1,30 @@
 import { useCallback, useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import { Badge, PageHeading, Skeleton } from '../components/ui'
-import { formatDate, formatPrice } from '../lib/format'
+import { formatDate, formatPrice, whatsappLink } from '../lib/format'
 import { useToast } from '../context/ToastContext'
 import { adminListOrders, adminUpdateOrder } from '../lib/adminApi'
 
 const STATUSES = ['processing', 'shipped', 'delivered', 'cancelled']
 const TONE = { processing: 'rose', shipped: 'lilac', delivered: 'sage', cancelled: 'neutral' }
+
+/**
+ * What to send the customer when an order moves.
+ *
+ * Nothing goes out on its own — the admin presses send in WhatsApp. Most
+ * customers order without an account and may never come back to the site, so
+ * a message they already read is the only thing that reliably reaches them.
+ */
+const statusMessage = (order) => {
+  const ref = `#${order.order_number}`
+  switch (order.status) {
+    case 'processing': return `Hi, your Nails By Eimi order ${ref} is being prepared. We will let you know when it is on its way.`
+    case 'shipped':    return `Hi, your Nails By Eimi order ${ref} is on its way${order.tracking ? ` — tracking ${order.tracking}` : ''}. Payment is cash on delivery.`
+    case 'delivered':  return `Hi, your Nails By Eimi order ${ref} has been delivered. Thank you for shopping with us!`
+    case 'cancelled':  return `Hi, your Nails By Eimi order ${ref} has been cancelled. Get in touch if that is unexpected.`
+    default:           return `Hi, an update on your Nails By Eimi order ${ref}: it is now ${order.status}.`
+  }
+}
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState(null)
@@ -65,7 +83,8 @@ export default function AdminOrders() {
               || (o.profiles ? `${o.profiles.first_name} ${o.profiles.last_name}`.trim() || o.profiles.email : null)
               || 'Guest'
             const contact = [o.guest_phone, o.guest_email ?? o.profiles?.email].filter(Boolean).join(' · ')
-            const waPhone = String(o.guest_phone ?? '').replace(/\D/g, '')
+            // An account holder has no guest_phone, so fall back to their profile.
+            const waPhone = o.guest_phone ?? o.profiles?.phone ?? null
             return (
               <article key={o.id} className="card p-4 sm:p-5">
                 <div className="flex flex-wrap items-center gap-4">
@@ -82,7 +101,7 @@ export default function AdminOrders() {
                         {contact}
                         {waPhone && (
                           <a
-                            href={`https://wa.me/${waPhone.startsWith('92') ? waPhone : `92${waPhone.replace(/^0/, '')}`}`}
+                            href={whatsappLink(waPhone)}
                             target="_blank"
                             rel="noreferrer"
                             className="text-wine hover:underline"
@@ -105,6 +124,19 @@ export default function AdminOrders() {
                       <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>
                     ))}
                   </select>
+
+                  {waPhone && (
+                    <a
+                      href={whatsappLink(waPhone, statusMessage(o))}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Opens WhatsApp with a message ready to send"
+                      className="btn-ghost !py-2 text-[13px]"
+                    >
+                      <Icon name="phone" size={15} />
+                      Tell customer
+                    </a>
+                  )}
 
                   <button
                     type="button"

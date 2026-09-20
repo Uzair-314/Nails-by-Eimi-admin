@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { Toasts } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { useNewOrders } from '../hooks/useNewOrders'
 
 /** Where "View the shop" points. Set VITE_SHOP_URL to the deployed storefront. */
 const SHOP_URL = import.meta.env.VITE_SHOP_URL ?? 'http://localhost:5173'
@@ -31,6 +32,15 @@ export default function AdminLayout() {
   const { loading, isAdmin, profile, signOut } = useAuth()
   const { toasts, toast } = useToast()
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+
+  const announce = useCallback((row) => toast(row.message), [toast])
+  const { count, markRead } = useNewOrders({ enabled: isAdmin, onNew: announce })
+
+  // Opening Orders is the acknowledgement — there is nothing else to click.
+  useEffect(() => {
+    if (location.pathname === '/orders') markRead()
+  }, [location.pathname, markRead])
 
   if (loading) {
     return (
@@ -95,6 +105,14 @@ export default function AdminLayout() {
                 <NavLink to={item.to} end={item.end} className={rowClass} onClick={() => setOpen(false)}>
                   <Icon name={item.icon} size={18} className="shrink-0 opacity-80" />
                   {item.label}
+                  {item.to === '/orders' && count > 0 && (
+                    <span
+                      aria-label={`${count} new ${count === 1 ? 'order' : 'orders'}`}
+                      className="ml-auto grid h-5 min-w-[20px] place-items-center rounded-full bg-white px-1.5 text-[11px] font-semibold text-wine"
+                    >
+                      {count}
+                    </span>
+                  )}
                 </NavLink>
               </li>
             ))}
@@ -138,6 +156,15 @@ export default function AdminLayout() {
             <Icon name="menu" size={22} />
           </button>
           <p className="font-display text-[18px] font-semibold text-wine">Admin</p>
+          {count > 0 && (
+            <NavLink
+              to="/orders"
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-wine px-3 py-1.5 text-[12px] font-medium text-white"
+            >
+              <Icon name="truck" size={14} />
+              {count} new
+            </NavLink>
+          )}
         </header>
 
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">

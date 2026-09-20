@@ -164,7 +164,7 @@ export async function adminDeleteCategory(id) {
 export async function adminListOrders({ status } = {}) {
   let query = supabase
     .from('orders')
-    .select('*, order_items(*), profiles(first_name, last_name, email)')
+    .select('*, order_items(*), profiles(first_name, last_name, email, phone)')
     .order('created_at', { ascending: false })
   if (status && status !== 'all') query = query.eq('status', status)
 
@@ -303,7 +303,7 @@ export async function adminListActivity({ entity, limit = 100 } = {}) {
 export async function adminOrderHistory({ limit = 200 } = {}) {
   const { data, error } = await supabase
     .from('orders')
-    .select('*, order_items(id, name, qty, price), profiles(first_name, last_name, email)')
+    .select('*, order_items(id, name, qty, price), profiles(first_name, last_name, email, phone)')
     .order('created_at', { ascending: false })
     .limit(limit)
   fail(error)
@@ -395,4 +395,51 @@ export async function adminListAbandonedCarts({ includeConverted = false } = {})
 
 export async function adminDeleteAbandonedCart(id) {
   fail((await supabase.from('abandoned_carts').delete().eq('id', id)).error)
+}
+
+/* ---------------------------------------------------------- notifications */
+
+/**
+ * New-order alerts for the admin. RLS limits these to `audience = 'admin'`,
+ * so the filter here is about intent rather than access.
+ */
+export async function adminListNotifications({ unreadOnly = true, limit = 30 } = {}) {
+  let query = supabase
+    .from('notifications')
+    .select('id, message, status, order_id, read_at, created_at')
+    .eq('audience', 'admin')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (unreadOnly) query = query.is('read_at', null)
+  const { data, error } = await query
+  fail(error)
+  return data ?? []
+}
+
+export async function adminMarkNotificationsRead(ids) {
+  if (!ids?.length) return
+  fail((await supabase
+    .from('notifications')
+    .update({ read_at: new Date().toISOString() })
+    .in('id', ids)).error)
+}
+
+/**
+ * Pushes new admin notifications to an open panel.
+ *
+ * Cash on delivery means an order is not really accepted until someone rings
+ * the customer, so waiting for a refresh to notice one is too slow. Returns an
+ * unsubscribe function.
+ */
+export function subscribeToNotifications(onInsert) {
+  const channel = supabase
+    .channel('admin-notifications')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'audience=eq.admin' },
+      (payload) => onInsert(payload.new)
+    )
+    .subscribe()
+
+  return () => { supabase.removeChannel(channel) }
 }

@@ -171,6 +171,26 @@ earlier changes are not in it.
 **Order history** — every order newest-first with customer, item count, tracking
 and total.
 
+### New-order alerts
+
+An order arrives as a toast and an unread count on Orders, pushed over Supabase
+Realtime rather than found on the next refresh — an order paid on delivery is
+not really accepted until somebody has rung the customer.
+
+Realtime respects row level security, so the admin policy on `notifications` is
+what decides who gets pushed a row. Opening Orders is the acknowledgement;
+there is nothing else to click.
+
+### Telling the customer
+
+Each order has a **Tell customer** button that opens WhatsApp with a message
+already written for that order's current status. Nothing is ever sent
+automatically — you press send.
+
+This exists because most customers order without an account and may never come
+back to the site, so the banner there cannot be relied on to reach them. A
+message they already read can.
+
 ### Delivery
 
 Shipping methods, each with a price, a free-over threshold and a delivery

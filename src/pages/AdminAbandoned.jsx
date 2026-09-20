@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import { Badge, PageHeading, Skeleton } from '../components/ui'
-import { formatPrice } from '../lib/format'
+import { formatPrice, whatsappLink } from '../lib/format'
 import { useToast } from '../context/ToastContext'
 import { adminDeleteAbandonedCart, adminListAbandonedCarts } from '../lib/adminApi'
 
@@ -96,7 +96,7 @@ export default function AdminAbandoned() {
                   <div className="flex gap-1.5">
                     {phone && !c.converted && (
                       <a
-                        href={`https://wa.me/${phone.startsWith('92') ? phone : `92${phone.replace(/^0/, '')}`}`}
+                        href={whatsappLink(phone)}
                         target="_blank"
                         rel="noreferrer"
                         className="btn-ghost !py-2 text-[13px]"
