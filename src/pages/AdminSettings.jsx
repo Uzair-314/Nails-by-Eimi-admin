@@ -16,8 +16,6 @@ const FIELDS = [
   { key: 'announcement',       label: 'Top bar message',         type: 'text',   group: 'Contact' },
   { key: 'minimum_order',      label: 'Minimum order (Rs)',      type: 'number', group: 'Orders',
     hint: 'Customers cannot check out below this.' },
-  { key: 'shipping_free_over', label: 'Free delivery over (Rs)', type: 'number', group: 'Orders' },
-  { key: 'shipping_flat_rate', label: 'Delivery charge (Rs)',    type: 'number', group: 'Orders' },
   { key: 'points_per_unit',    label: 'Points per Rs 1',         type: 'number', group: 'Loyalty',
     hint: '0.02 means 2 points for every Rs 100 spent.' },
 ]

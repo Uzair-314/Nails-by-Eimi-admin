@@ -61,7 +61,7 @@ IP list — though the database is already the real boundary. See
 | **History** | Audit log of every change, plus full order history |
 | **Customers** | Accounts, tier and points balance |
 | **Messages** | Contact form submissions |
-| **Settings** | Contact details, delivery rules, minimum order, points rate |
+| **Settings** | Contact details, minimum order, points rate. Delivery prices live under Delivery |
 
 Changing anything here changes the live shop — both apps read the same database.
 

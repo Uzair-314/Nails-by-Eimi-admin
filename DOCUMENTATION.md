@@ -210,7 +210,6 @@ Key/value rows in `site_settings`, rendered from a `FIELDS` declaration in
 | `contact_whatsapp`, `contact_email` | Top bar, footer, contact page |
 | `announcement` | Black top bar message |
 | `minimum_order` | Blocks checkout below it |
-| `shipping_free_over` | Fallback for the cart before a method is picked |
 | `points_per_unit` | Points awarded. `0.02` = 2 points per Rs 100 |
 
 The shop reads these when a page loads, so an open tab keeps old values until
