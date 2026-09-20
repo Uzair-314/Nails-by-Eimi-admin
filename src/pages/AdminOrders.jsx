@@ -61,9 +61,11 @@ export default function AdminOrders() {
         ) : (
           orders.map((o) => {
             const expanded = open === o.id
-            const customer = o.profiles
-              ? `${o.profiles.first_name} ${o.profiles.last_name}`.trim() || o.profiles.email
-              : 'Guest'
+            const customer = o.guest_name
+              || (o.profiles ? `${o.profiles.first_name} ${o.profiles.last_name}`.trim() || o.profiles.email : null)
+              || 'Guest'
+            const contact = [o.guest_phone, o.guest_email ?? o.profiles?.email].filter(Boolean).join(' · ')
+            const waPhone = String(o.guest_phone ?? '').replace(/\D/g, '')
             return (
               <article key={o.id} className="card p-4 sm:p-5">
                 <div className="flex flex-wrap items-center gap-4">
@@ -75,6 +77,21 @@ export default function AdminOrders() {
                     <p className="mt-1 text-[13px] text-muted">
                       {customer} · {formatDate(o.created_at)} · {o.order_items?.length ?? 0} items
                     </p>
+                    {contact && (
+                      <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[12px] text-muted">
+                        {contact}
+                        {waPhone && (
+                          <a
+                            href={`https://wa.me/${waPhone.startsWith('92') ? waPhone : `92${waPhone.replace(/^0/, '')}`}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-wine hover:underline"
+                          >
+                            WhatsApp
+                          </a>
+                        )}
+                      </p>
+                    )}
                   </div>
 
                   <p className="text-[15px] font-semibold text-wine">{formatPrice(o.total)}</p>
@@ -143,6 +160,21 @@ export default function AdminOrders() {
                           </address>
                         ) : (
                           <p className="mt-2 text-[13px] text-muted">No address recorded.</p>
+                        )}
+
+                        {o.delivery_notes && (
+                          <div className="mt-4">
+                            <h3 className="text-[13px] font-medium text-ink">Delivery notes</h3>
+                            <p className="mt-1.5 rounded-xl bg-blush px-3.5 py-2.5 text-[13px] leading-relaxed text-ink">
+                              {o.delivery_notes}
+                            </p>
+                          </div>
+                        )}
+
+                        {o.shipping_method && (
+                          <p className="mt-3 text-[13px] text-muted">
+                            Method: <span className="text-ink">{o.shipping_method}</span>
+                          </p>
                         )}
 
                         <label className="mt-4 block">

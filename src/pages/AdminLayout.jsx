@@ -14,6 +14,8 @@ const ADMIN_NAV = [
   { to: '/categories', label: 'Categories', icon: 'tag' },
   { to: '/orders', label: 'Orders', icon: 'truck' },
   { to: '/discounts', label: 'Discounts', icon: 'gift' },
+  { to: '/shipping', label: 'Delivery', icon: 'truck' },
+  { to: '/abandoned', label: 'Unfinished', icon: 'clock' },
   { to: '/history', label: 'History', icon: 'clock' },
   { to: '/customers', label: 'Customers', icon: 'user' },
   { to: '/messages', label: 'Messages', icon: 'mail' },

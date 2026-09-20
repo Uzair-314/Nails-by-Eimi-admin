@@ -171,9 +171,30 @@ earlier changes are not in it.
 **Order history** — every order newest-first with customer, item count, tracking
 and total.
 
+### Delivery
+
+Shipping methods, each with a price, a free-over threshold and a delivery
+estimate. The customer picks one at checkout, and `place_order` reads the price
+from the row rather than from the request — changing a price here changes what
+the next order is charged.
+
+Deactivate a method instead of deleting it, so past orders keep their label.
+
+### Unfinished
+
+Checkouts that were started but never completed, saved once the customer has
+entered a phone number or email to follow up on. A row is marked converted when
+the order goes through, so this list is only the ones that got away.
+
+Nothing here is written by the admin — the shop writes these rows through its
+own endpoint.
+
 ### Customers
 
 Accounts with tier, points and join date. Read-only.
+
+Most orders have no customer, because nobody has to sign in to buy. Their name
+and phone number are on the order itself.
 
 ### Messages
 
@@ -189,7 +210,7 @@ Key/value rows in `site_settings`, rendered from a `FIELDS` declaration in
 | `contact_whatsapp`, `contact_email` | Top bar, footer, contact page |
 | `announcement` | Black top bar message |
 | `minimum_order` | Blocks checkout below it |
-| `shipping_free_over`, `shipping_flat_rate` | Cart, checkout, `place_order` |
+| `shipping_free_over` | Fallback for the cart before a method is picked |
 | `points_per_unit` | Points awarded. `0.02` = 2 points per Rs 100 |
 
 The shop reads these when a page loads, so an open tab keeps old values until

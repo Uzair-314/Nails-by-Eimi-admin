@@ -54,7 +54,9 @@ IP list — though the database is already the real boundary. See
 | **Dashboard** | Revenue, open orders, customer count, low stock, unread messages |
 | **Products** | Price and sale price, stock, out-of-stock toggle, hide/show, photo upload, categories, tags, spec list |
 | **Categories** | Create, rename, reorder, nest, mark promotional; controls the shop's menu |
-| **Orders** | Status, tracking number, full order detail |
+| **Orders** | Status, tracking number, full order detail, guest contact details |
+| **Delivery** | Shipping methods — name, price, free-over threshold, estimate |
+| **Unfinished** | Checkouts that were started but not completed |
 | **Discounts** | Percentage or fixed, minimum spend, expiry, usage limits |
 | **History** | Audit log of every change, plus full order history |
 | **Customers** | Accounts, tier and points balance |

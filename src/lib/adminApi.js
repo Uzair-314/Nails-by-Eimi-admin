@@ -352,3 +352,47 @@ export async function adminSetPrice(id, price) {
     throw error
   }
 }
+
+/* --------------------------------------------------------------- shipping */
+
+export async function adminListShippingMethods() {
+  const { data, error } = await supabase.from('shipping_methods').select('*').order('sort_order')
+  fail(error)
+  return data ?? []
+}
+
+export async function adminSaveShippingMethod(m) {
+  const row = {
+    name: m.name,
+    description: m.description ?? '',
+    price: Number(m.price) || 0,
+    free_over: m.free_over === '' || m.free_over == null ? null : Number(m.free_over),
+    estimate: m.estimate ?? '',
+    is_active: m.is_active ?? true,
+    sort_order: Number(m.sort_order) || 0,
+  }
+  const { error } = m.id
+    ? await supabase.from('shipping_methods').update(row).eq('id', m.id)
+    : await supabase.from('shipping_methods').insert(row)
+  fail(error)
+  return adminListShippingMethods()
+}
+
+export async function adminDeleteShippingMethod(id) {
+  fail((await supabase.from('shipping_methods').delete().eq('id', id)).error)
+  return adminListShippingMethods()
+}
+
+/* ------------------------------------------------------- abandoned baskets */
+
+export async function adminListAbandonedCarts({ includeConverted = false } = {}) {
+  let query = supabase.from('abandoned_carts').select('*').order('updated_at', { ascending: false })
+  if (!includeConverted) query = query.eq('converted', false)
+  const { data, error } = await query
+  fail(error)
+  return data ?? []
+}
+
+export async function adminDeleteAbandonedCart(id) {
+  fail((await supabase.from('abandoned_carts').delete().eq('id', id)).error)
+}

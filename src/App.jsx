@@ -9,6 +9,8 @@ import AdminHistory from './pages/AdminHistory'
 import AdminCustomers from './pages/AdminCustomers'
 import AdminMessages from './pages/AdminMessages'
 import AdminSettings from './pages/AdminSettings'
+import AdminShipping from './pages/AdminShipping'
+import AdminAbandoned from './pages/AdminAbandoned'
 import Login from './pages/Login'
 import { useAuth } from './context/AuthContext'
 
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="categories" element={<AdminCategories />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="discounts" element={<AdminDiscounts />} />
+        <Route path="shipping" element={<AdminShipping />} />
+        <Route path="abandoned" element={<AdminAbandoned />} />
         <Route path="history" element={<AdminHistory />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="messages" element={<AdminMessages />} />
