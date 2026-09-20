@@ -171,6 +171,21 @@ earlier changes are not in it.
 **Order history** — every order newest-first with customer, item count, tracking
 and total.
 
+### Announcements
+
+The pink strip across the very top of the shop. Each announcement is one short
+sentence, and they rotate every three seconds.
+
+A link can point at a category, a product or a plain address — picked from a
+list rather than typed, so renaming a category cannot quietly break it. Leave it
+on "Nowhere" for something like opening hours, which is information rather than
+an invitation.
+
+The strip is one line tall at every screen size, so length matters: the editor
+counts characters and says when one is long for a phone, and previews the strip
+as the shop draws it. With a single announcement showing, it sits still instead
+of rotating. With none, the strip does not appear at all.
+
 ### Slideshow
 
 The three pictures at the top of the shop. Upload an image, write the wording,

@@ -518,3 +518,46 @@ export async function adminReorderSlides(ordered) {
     fail((await supabase.from('hero_slides').update({ sort_order: i }).eq('id', slide.id)).error)
   }
 }
+
+/* ---------------------------------------------------------- announcements */
+
+export async function adminListAnnouncements() {
+  const { data, error } = await supabase
+    .from('announcements')
+    .select('*')
+    .order('sort_order')
+  fail(error)
+  return data ?? []
+}
+
+export async function adminSaveAnnouncement(a) {
+  const row = {
+    text: a.text,
+    link_type: a.link_type,
+    // Only the field the chosen link type uses survives, so switching from a
+    // category to a plain address cannot leave a stale target behind it.
+    product_id: a.link_type === 'product' ? a.product_id : null,
+    category_id: a.link_type === 'category' ? a.category_id : null,
+    url: a.link_type === 'url' ? a.url : null,
+    is_active: a.is_active,
+    sort_order: a.sort_order,
+  }
+
+  const query = a.id
+    ? supabase.from('announcements').update(row).eq('id', a.id)
+    : supabase.from('announcements').insert(row)
+
+  const { data, error } = await query.select().single()
+  fail(error)
+  return data
+}
+
+export async function adminDeleteAnnouncement(id) {
+  fail((await supabase.from('announcements').delete().eq('id', id)).error)
+}
+
+export async function adminReorderAnnouncements(ordered) {
+  for (const [i, a] of ordered.entries()) {
+    fail((await supabase.from('announcements').update({ sort_order: i }).eq('id', a.id)).error)
+  }
+}

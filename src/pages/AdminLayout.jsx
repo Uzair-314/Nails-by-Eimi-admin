@@ -14,6 +14,7 @@ const ADMIN_NAV = [
   { to: '/products', label: 'Products', icon: 'bag' },
   { to: '/categories', label: 'Categories', icon: 'tag' },
   { to: '/slides', label: 'Slideshow', icon: 'sparkle' },
+  { to: '/announcements', label: 'Announcements', icon: 'info' },
   { to: '/orders', label: 'Orders', icon: 'truck' },
   { to: '/discounts', label: 'Discounts', icon: 'gift' },
   { to: '/shipping', label: 'Delivery', icon: 'truck' },

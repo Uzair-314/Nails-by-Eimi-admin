@@ -4,6 +4,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminProducts from './pages/AdminProducts'
 import AdminCategories from './pages/AdminCategories'
 import AdminSlides from './pages/AdminSlides'
+import AdminAnnouncements from './pages/AdminAnnouncements'
 import AdminOrders from './pages/AdminOrders'
 import AdminDiscounts from './pages/AdminDiscounts'
 import AdminHistory from './pages/AdminHistory'
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="slides" element={<AdminSlides />} />
+        <Route path="announcements" element={<AdminAnnouncements />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="discounts" element={<AdminDiscounts />} />
         <Route path="shipping" element={<AdminShipping />} />
