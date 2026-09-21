@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import { useAuth } from '../context/AuthContext'
 
@@ -13,6 +13,17 @@ export default function Login() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [notice, setNotice] = useState(null)
+
+  // Being dropped at a login screen with no explanation reads as a fault. The
+  // shell leaves this behind when it signs an idle session out.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('nbe-admin:idleOut')) {
+        sessionStorage.removeItem('nbe-admin:idleOut')
+        setNotice('You were signed out after 30 minutes of inactivity. Sign in to carry on.')
+      }
+    } catch { /* private mode */ }
+  }, [])
 
   const { signIn, resetPassword } = useAuth()
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))

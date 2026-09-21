@@ -80,12 +80,33 @@ export function AuthProvider({ children }) {
     },
 
     /**
-     * Supabase enforces the project's length and character rules here, not at
-     * sign-in, so this is where a weak password is actually refused. The error
-     * is passed through rather than replaced — it says which rule failed.
+     * Changing the password, proving the current one first.
+     *
+     * `updateUser` alone asks for nothing but the new password, so an open
+     * session is enough to change it — anyone at an unattended laptop could
+     * take the account and lock the owner out. Supabase has no "verify this
+     * password" call, so the check is a sign-in with the current one, which
+     * fails if it is wrong.
+     *
+     * Skipped during recovery: someone following a reset link has forgotten
+     * the old password, which is the entire reason they are here.
+     *
+     * Supabase enforces the project's length and character rules inside
+     * `updateUser`, not at sign-in, so that is where a weak password is
+     * refused. Its error names the failing rule and is passed through.
      */
-    changePassword: async (password) => {
-      const { error } = await supabase.auth.updateUser({ password })
+    changePassword: async ({ currentPassword, newPassword }) => {
+      if (!recovery) {
+        const email = session?.user?.email
+        if (!email) throw new Error('You are not signed in')
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password: currentPassword,
+        })
+        if (error) throw new Error('That current password is not right')
+      }
+
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) throw error
       setRecovery(false)
     },

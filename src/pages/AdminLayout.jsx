@@ -5,6 +5,7 @@ import { Toasts } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { useNewOrders } from '../hooks/useNewOrders'
+import { useIdleSignOut } from '../hooks/useIdleSignOut'
 
 /** Where "View the shop" points. Set VITE_SHOP_URL to the deployed storefront. */
 const SHOP_URL = import.meta.env.VITE_SHOP_URL ?? 'http://localhost:5173'
@@ -51,6 +52,16 @@ export default function AdminLayout() {
   useEffect(() => {
     if (recovery && location.pathname !== '/password') navigate('/password', { replace: true })
   }, [recovery, location.pathname, navigate])
+
+  // A session left open on a machine someone has walked away from is the weak
+  // point here, not the password. The flag survives the sign-out so the login
+  // screen can say why it happened rather than looking like a glitch.
+  const idleSignOut = useCallback(async () => {
+    try { sessionStorage.setItem('nbe-admin:idleOut', '1') } catch { /* private mode */ }
+    await signOut()
+  }, [signOut])
+
+  const { msLeft, staySignedIn } = useIdleSignOut({ enabled: isAdmin, onTimeout: idleSignOut })
 
   if (loading) {
     return (
@@ -181,6 +192,36 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      {msLeft != null && (
+        <div
+          role="alertdialog"
+          aria-label="About to be signed out"
+          className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-[420px] rounded-2xl border border-line bg-white p-4 shadow-lift sm:inset-x-auto sm:right-6"
+        >
+          <div className="flex items-start gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blush text-wine">
+              <Icon name="clock" size={18} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-medium text-ink">
+                Signing you out in {Math.max(1, Math.round(msLeft / 1000))}s
+              </p>
+              <p className="mt-1 text-[12px] leading-relaxed text-muted">
+                You have been inactive for a while. Anything unsaved will be lost.
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={staySignedIn} className="btn-primary !py-2 text-[13px]">
+              Stay signed in
+            </button>
+            <button type="button" onClick={idleSignOut} className="btn-ghost !py-2 text-[13px]">
+              Sign out now
+            </button>
+          </div>
+        </div>
+      )}
 
       <Toasts toasts={toasts} />
     </div>

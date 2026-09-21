@@ -19,6 +19,7 @@ export default function AdminPassword() {
   const { toast } = useToast()
   const navigate = useNavigate()
 
+  const [current, setCurrent] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [show, setShow] = useState(false)
@@ -36,8 +37,9 @@ export default function AdminPassword() {
     setBusy(true)
     setError(null)
     try {
-      await changePassword(password)
+      await changePassword({ currentPassword: current, newPassword: password })
       setDone(true)
+      setCurrent('')
       setPassword('')
       setConfirm('')
       toast('Password changed')
@@ -84,6 +86,27 @@ export default function AdminPassword() {
       />
 
       <form onSubmit={submit} className="card mt-6 p-6">
+        {/* Not asked for during recovery: someone following a reset link has
+            forgotten this, which is why they are here. */}
+        {!recovery && (
+          <label className="mb-5 block border-b border-line pb-5">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">Current password</span>
+            <input
+              required
+              type={show ? 'text' : 'password'}
+              value={current}
+              onChange={(e) => setCurrent(e.target.value)}
+              autoComplete="current-password"
+              className="field"
+              placeholder="The password you sign in with now"
+            />
+            <span className="mt-1.5 block text-[12px] text-muted">
+              Asked for so that an open session on an unattended machine is not enough to take the
+              account.
+            </span>
+          </label>
+        )}
+
         <label className="block">
           <span className="mb-1.5 block text-[13px] font-medium text-ink">New password</span>
           <input
@@ -132,7 +155,7 @@ export default function AdminPassword() {
 
         <button
           type="submit"
-          disabled={busy || mismatch || !password}
+          disabled={busy || mismatch || !password || (!recovery && !current)}
           className="btn-primary mt-6 w-full disabled:opacity-50 sm:w-auto"
         >
           {busy ? 'Saving…' : 'Change password'}
