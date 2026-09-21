@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { Toasts } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
@@ -23,6 +23,7 @@ const ADMIN_NAV = [
   { to: '/customers', label: 'Customers', icon: 'user' },
   { to: '/messages', label: 'Messages', icon: 'mail' },
   { to: '/settings', label: 'Settings', icon: 'settings' },
+  { to: '/password', label: 'Password', icon: 'shield' },
 ]
 
 /**
@@ -31,10 +32,11 @@ const ADMIN_NAV = [
  * these routes would simply see nothing.
  */
 export default function AdminLayout() {
-  const { loading, isAdmin, profile, signOut } = useAuth()
+  const { loading, isAdmin, profile, signOut, recovery } = useAuth()
   const { toasts, toast } = useToast()
   const [open, setOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   const announce = useCallback((row) => toast(row.message), [toast])
   const { count, markRead } = useNewOrders({ enabled: isAdmin, onNew: announce })
@@ -43,6 +45,12 @@ export default function AdminLayout() {
   useEffect(() => {
     if (location.pathname === '/orders') markRead()
   }, [location.pathname, markRead])
+
+  // Arriving from a recovery link signs you in but changes nothing. Hold the
+  // password form until it is done, or the link achieves precisely nothing.
+  useEffect(() => {
+    if (recovery && location.pathname !== '/password') navigate('/password', { replace: true })
+  }, [recovery, location.pathname, navigate])
 
   if (loading) {
     return (

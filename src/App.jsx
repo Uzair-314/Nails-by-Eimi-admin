@@ -5,6 +5,7 @@ import AdminProducts from './pages/AdminProducts'
 import AdminCategories from './pages/AdminCategories'
 import AdminSlides from './pages/AdminSlides'
 import AdminAnnouncements from './pages/AdminAnnouncements'
+import AdminPassword from './pages/AdminPassword'
 import AdminOrders from './pages/AdminOrders'
 import AdminDiscounts from './pages/AdminDiscounts'
 import AdminHistory from './pages/AdminHistory'
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="messages" element={<AdminMessages />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="password" element={<AdminPassword />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

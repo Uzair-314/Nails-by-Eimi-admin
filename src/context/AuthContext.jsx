@@ -15,6 +15,11 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // A recovery link signs the user in and leaves it to the app to ask for the
+  // new password. Without this flag the link just drops them on the dashboard
+  // already logged in, and the password never actually changes.
+  const [recovery, setRecovery] = useState(false)
+
   const refreshProfile = useCallback(async () => {
     try {
       setProfile(await getUser())
@@ -33,8 +38,9 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, next) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, next) => {
       if (!active) return
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true)
       setSession(next)
       if (next) await refreshProfile()
       else setProfile(null)
@@ -50,6 +56,7 @@ export function AuthProvider({ children }) {
     loading,
     isSignedIn: !!session,
     isAdmin: !!profile?.isAdmin,
+    recovery,
     refreshProfile,
 
 
@@ -64,13 +71,25 @@ export function AuthProvider({ children }) {
     },
 
     resetPassword: async (email) => {
-      // Back to the panel root — this app has no /account routes.
+      // Straight to the form that actually changes it. Landing on the dashboard
+      // instead leaves someone signed in with the same password they forgot.
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/password`,
       })
       if (error) throw error
     },
-  }), [session, profile, loading, refreshProfile])
+
+    /**
+     * Supabase enforces the project's length and character rules here, not at
+     * sign-in, so this is where a weak password is actually refused. The error
+     * is passed through rather than replaced — it says which rule failed.
+     */
+    changePassword: async (password) => {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+      setRecovery(false)
+    },
+  }), [session, profile, loading, recovery, refreshProfile])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
