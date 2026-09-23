@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext'
 import {
   adminCreateProduct, adminDeleteImage, adminUpdateProduct, adminUploadImage,
 } from '../lib/adminApi'
+import { NAIL_COLORS, normalizeHex, readableOn } from '../lib/nailColors'
 
 const slugify = (s) =>
   s.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
@@ -30,6 +31,8 @@ export default function ProductEditor({ product, categories, onClose, onSaved })
     is_featured: product?.is_featured ?? false,
     category_ids: (product?.product_categories ?? []).map((pc) => pc.category_id),
     tags: product?.tags ?? [],
+    color_name: product?.color_name ?? '',
+    color_hex: product?.color_hex ?? '',
   }))
 
   const [images, setImages] = useState(
@@ -54,6 +57,21 @@ export default function ProductEditor({ product, categories, onClose, onSaved })
 
   const toggleTag = (tag) =>
     setForm((f) => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter((t) => t !== tag) : [...f.tags, tag] }))
+
+  // Picking a swatch always sets the colour, but only renames the shade when the
+  // current name is empty or is itself a palette name — so a shade the shop has
+  // named itself ("Eimi's Red") survives a nudge to the colour.
+  const pickPreset = ({ name, hex }) =>
+    setForm((f) => ({
+      ...f,
+      color_hex: hex,
+      color_name:
+        !f.color_name.trim() || NAIL_COLORS.some((c) => c.name === f.color_name.trim())
+          ? name
+          : f.color_name,
+    }))
+
+  const clearColor = () => set({ color_name: '', color_hex: '' })
 
   const submit = async (e) => {
     e.preventDefault()
@@ -200,6 +218,102 @@ export default function ProductEditor({ product, categories, onClose, onSaved })
                 <Icon name="plus" size={15} />
                 Add a line
               </button>
+            </div>
+          </section>
+
+          <section className="card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-[20px] font-semibold text-ink">Shade</h2>
+              {(form.color_hex || form.color_name) && (
+                <button type="button" onClick={clearColor} className="btn-quiet !py-1.5 text-[13px]">
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+              The nail colour a shopper sees on the product page and on the card in a
+              listing. Optional — leave it empty and nothing is shown.
+            </p>
+
+            <div className="mt-4 flex items-center gap-3">
+              <span
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-full ring-1 ring-black/10"
+                style={{ background: normalizeHex(form.color_hex) ?? 'repeating-linear-gradient(45deg,#F4F1EE 0 6px,#E9E4DF 6px 12px)' }}
+              >
+                {!normalizeHex(form.color_hex) && <Icon name="close" size={14} className="text-muted" />}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[14px] font-medium text-ink">
+                  {form.color_name.trim() || 'No shade set'}
+                </p>
+                <p className="text-[12px] text-muted">
+                  {normalizeHex(form.color_hex) ?? 'No colour chosen'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <span className="mb-2 block text-[13px] font-medium text-ink">Palette</span>
+              <div className="flex flex-wrap gap-2">
+                {NAIL_COLORS.map((c) => {
+                  const active = normalizeHex(form.color_hex) === c.hex
+                  return (
+                    <button
+                      key={c.hex}
+                      type="button"
+                      onClick={() => pickPreset(c)}
+                      title={`${c.name} · ${c.hex}`}
+                      aria-label={c.name}
+                      aria-pressed={active}
+                      className={`grid h-9 w-9 place-items-center rounded-full ring-1 ring-black/10 transition
+                                  hover:scale-105 ${active ? 'outline outline-2 outline-offset-2 outline-[#E01B6A]' : ''}`}
+                      style={{ background: c.hex }}
+                    >
+                      {active && <Icon name="check" size={14} style={{ color: readableOn(c.hex) }} />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1.5 block text-[13px] font-medium text-ink">Shade name</span>
+                <input
+                  value={form.color_name}
+                  onChange={(e) => set({ color_name: e.target.value })}
+                  className="field"
+                  placeholder="Ballet Blush"
+                  maxLength={40}
+                />
+              </label>
+
+              <div>
+                <span className="mb-1.5 block text-[13px] font-medium text-ink">Custom colour</span>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={normalizeHex(form.color_hex) ?? '#F3D7D3'}
+                    onChange={(e) => set({ color_hex: e.target.value.toUpperCase() })}
+                    className="h-[42px] w-14 shrink-0 cursor-pointer rounded-lg border border-line bg-white p-1"
+                    aria-label="Pick a custom colour"
+                  />
+                  <input
+                    value={form.color_hex}
+                    onChange={(e) => set({ color_hex: e.target.value })}
+                    className="field"
+                    placeholder="#F3D7D3"
+                    maxLength={7}
+                    spellCheck={false}
+                  />
+                </div>
+                {form.color_hex.trim() && !normalizeHex(form.color_hex) && (
+                  <span className="mt-1 block text-[12px] text-wine">
+                    Needs to look like #F3D7D3 — saved as no colour until it does.
+                  </span>
+                )}
+              </div>
             </div>
           </section>
 

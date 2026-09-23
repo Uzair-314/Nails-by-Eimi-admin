@@ -5,6 +5,7 @@
  */
 
 import { supabase } from './supabase'
+import { normalizeHex } from './nailColors'
 
 const fail = (error) => { if (error) throw error }
 
@@ -48,6 +49,11 @@ const productRow = (p) => ({
   is_active: p.is_active ?? true,
   is_featured: p.is_featured ?? false,
   tags: p.tags ?? [],
+  // A shade is optional. Both halves are normalised to null rather than '' so
+  // that "no shade" is one value everywhere, and the storefront can test for it
+  // with a single check.
+  color_name: p.color_name?.trim() ? p.color_name.trim() : null,
+  color_hex: normalizeHex(p.color_hex),
 })
 
 /**

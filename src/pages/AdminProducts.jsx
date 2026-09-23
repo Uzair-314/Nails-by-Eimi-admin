@@ -157,6 +157,13 @@ export default function AdminProducts() {
 
                 <div className="min-w-[180px] flex-1">
                   <div className="flex flex-wrap items-center gap-2">
+                    {p.color_hex && (
+                      <span
+                        className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-black/10"
+                        style={{ background: p.color_hex }}
+                        title={p.color_name ?? p.color_hex}
+                      />
+                    )}
                     <h2 className="text-[15px] font-medium text-ink">{p.name}</h2>
                     {!p.is_active && <Badge tone="neutral">Hidden</Badge>}
                     {outOfStock && <Badge tone="rose">Out of stock</Badge>}
